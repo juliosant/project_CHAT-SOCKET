@@ -1,4 +1,16 @@
 import socket
+from cryptography.fernet import Fernet
+
+def loadKey():
+    return open('secret.key', 'rb').read()
+    
+def receiveCypher(cypher, isKey):
+    if bytes(isKey, encoding="utf-8") == loadKey(): # comparar as chaves
+        cipherSuite = Fernet(isKey)   
+        plainText = cipherSuite.decrypt(cypher)
+        return plainText.decode('utf-8')
+    else:
+        return "!-->NÃO DECIFRADO<--"
 
 receiveHost = '127.0.0.2'
 receivePort = 7001
@@ -38,21 +50,37 @@ otherUser = con.recv(1024).decode("utf-8")
 
 while True:
     sendMSG = input("Envie algo: ")
-    client_socket.send(sendMSG.encode('utf-8'))
 
     if sendMSG == 'TCHAU':
+        #client_socket.send(bytes(sendMSG, encoding= 'utf-8'))
         print("Fim de conversa!")
         server_socket.close()
         client_socket.close()
         break
     
     else:
+        sendMSG = bytes(sendMSG, encoding= 'utf-8')
+        key = Fernet.generate_key()
+        with open('secret.key', 'wb') as keyFile:
+            keyFile.write(key)
+        cipherSuite = Fernet(key)
+        cipherText = cipherSuite.encrypt(sendMSG)
+        #print('cipher message: ' + cipherText.decode('utf-8') + ' key: ' + key.decode('utf-8'))
+        client_socket.send(cipherText)
+
         print('Aguardando mensagem...')
         receive = con.recv(1024)
-        print(otherUser + ": "+" "+ receive.decode("utf-8"))
 
-        if receive.decode('utf-8') == 'TCHAU':
+        if receive.decode("utf-8") == '':
             print('Conversa encerrada pelo outro usuário!')
             server_socket.close()
             client_socket.close()
             break
+
+        print(otherUser + ": "+" "+ receive.decode("utf-8"))
+
+        # Decriptando
+        print("Descifrando...")
+        key = input("Chave: ")
+        receiveMSG = receiveCypher(bytes(receive.decode('utf-8'), encoding='utf-8'), key)
+        print(otherUser+": "+receiveMSG)
