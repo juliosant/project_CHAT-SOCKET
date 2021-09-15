@@ -8,7 +8,7 @@ def receiveCypher(cypher, key):
         plainText = cipherSuite.decrypt(cypher)
         return plainText.decode('utf-8')
     except:
-        return  "!-->NÃO DECIFRADO<--"
+        return  "!-->NÃO DECIFRADO. TENTE NOVAMENTE<--"
 
 receiveHost = '127.0.0.2'
 receivePort = 7001
@@ -78,7 +78,10 @@ while True:
         print(otherUser + ": "+" "+ receive.decode("utf-8"))
 
         # Decriptando
-        print("Descifrando...")
-        key = input("Chave: ")
-        receiveMSG = receiveCypher(bytes(receive.decode('utf-8'), encoding='utf-8'), key)
-        print(otherUser+": "+receiveMSG)
+        receiveMSG = "!-->NÃO DECIFRADO. TENTE NOVAMENTE<--"
+        while receiveMSG == "!-->NÃO DECIFRADO. TENTE NOVAMENTE<--":
+            print("Decifrando...")
+            key = input("Chave: ")
+            receiveMSG = receiveCypher(bytes(receive.decode('utf-8'), encoding='utf-8'), key)
+            print(otherUser+": "+receiveMSG)
+            
