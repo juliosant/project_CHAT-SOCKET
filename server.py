@@ -2,16 +2,14 @@
 import socket
 from cryptography.fernet import Fernet
 
-def loadKey():
-    return open('secret.key', 'rb').read()
-    
-def receiveCypher(cypher, isKey):
-    if bytes(isKey, encoding="utf-8") == loadKey(): # comparar as chaves
-        cipherSuite = Fernet(isKey)   
+
+def receiveCypher(cypher, key):
+    try:
+        cipherSuite = Fernet(key)   
         plainText = cipherSuite.decrypt(cypher)
         return plainText.decode('utf-8')
-    else:
-        return "!-->NÃO DECIFRADO<--"
+    except:
+        return  "!-->NÃO DECIFRADO<--"
 
 receiveHost = '127.0.0.1'  #ip de origem
 receivePort = 7000  #porta de origem
