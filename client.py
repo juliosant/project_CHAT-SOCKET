@@ -1,14 +1,8 @@
 import socket
 from cryptography.fernet import Fernet
+from decoder import receiveCypher
+from encoder import sendCypher
 
-
-def receiveCypher(cypher, key):
-    try:
-        cipherSuite = Fernet(key)   
-        plainText = cipherSuite.decrypt(cypher)
-        return plainText.decode('utf-8')
-    except:
-        return  "!-->NÃO DECIFRADO. TENTE NOVAMENTE<--"
 
 receiveHost = '127.0.0.2'
 receivePort = 7001
@@ -19,10 +13,6 @@ sendPort = 7000
 receiveAddr = (receiveHost, receivePort)
 sendAddr = (sendHost, sendPort)
 
-'''ip = input('digite o ip de conexao: ')
-port = 7000
-addr = ((ip,port))
-'''
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect(sendAddr)
 
@@ -35,11 +25,6 @@ print('Aguardando conexão...')
 con, client = server_socket.accept()
 print('Conexão estabelecida!')
 
-'''mensagem = input("digite uma mensagem para enviar ao servidor")
-client_socket.send(mensagem.encode('utf-8'))
-print('mensagem enviada')
-client_socket.close()
-'''
 username = input('Usuario: ')
 client_socket.send(username.encode("utf-8"))
 
@@ -57,13 +42,10 @@ while True:
         break
     
     else:
-        sendMSG = bytes(sendMSG, encoding= 'utf-8')
-        key = Fernet.generate_key()
-        with open('secret.key', 'wb') as keyFile:
-            keyFile.write(key)
-        cipherSuite = Fernet(key)
-        cipherText = cipherSuite.encrypt(sendMSG)
-        #print('cipher message: ' + cipherText.decode('utf-8') + ' key: ' + key.decode('utf-8'))
+        # Chamar função de encriptar mensagem
+        cipherText = sendCypher(sendMSG)
+
+        # Enviar mensagem
         client_socket.send(cipherText)
 
         print('Aguardando mensagem...')
@@ -77,7 +59,7 @@ while True:
 
         print(otherUser + ": "+" "+ receive.decode("utf-8"))
 
-        # Decriptando
+        # Chamar função de decriptar mensagem. Adicionar chave gerada e passar mensagem encriptada e chave como parâmetro
         receiveMSG = "!-->NÃO DECIFRADO. TENTE NOVAMENTE<--"
         while receiveMSG == "!-->NÃO DECIFRADO. TENTE NOVAMENTE<--":
             print("Decifrando...")

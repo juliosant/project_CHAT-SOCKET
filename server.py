@@ -1,15 +1,9 @@
 
 import socket
 from cryptography.fernet import Fernet
+from decoder import receiveCypher
+from encoder import sendCypher
 
-
-def receiveCypher(cypher, key):
-    try:
-        cipherSuite = Fernet(key)   
-        plainText = cipherSuite.decrypt(cypher)
-        return plainText.decode('utf-8')
-    except:
-        return  "!-->NÃO DECIFRADO. TENTE NOVAMENTE<--"
 
 receiveHost = '127.0.0.1'  #ip de origem
 receivePort = 7000  #porta de origem
@@ -44,13 +38,6 @@ otherUser = con.recv(1024).decode("utf-8")
 while True:
     print('Aguardando mensagem...')
     receive = con.recv(1024)
-    # Decriptando
-    
-    #print("Descifrando...")
-    #key = input("Chave: ")
-    #receiveMSG = receiveCypher(bytes(receive.decode('utf-8'), encoding='utf-8'), key)
-    #print(otherUser+": "+ receiveMSG)
-    #receiveCypher(bytes(receive.decode('utf-8'), encoding='utf-8'), key)
 
     if receive.decode("utf-8") == '':
         print('Conversa encerrada pelo outro usuário!')
@@ -61,7 +48,7 @@ while True:
     else:
         print(otherUser+": "+" "+ receive.decode('utf-8'))
 
-        # Decriptando
+        # Chamar função de decriptar mensagem. Adicionar chave gerada e passar mensagem encriptada e chave como parâmetro
         receiveMSG = "!-->NÃO DECIFRADO. TENTE NOVAMENTE<--"
         while receiveMSG == "!-->NÃO DECIFRADO. TENTE NOVAMENTE<--":
             print("Decifrando...")
@@ -78,28 +65,8 @@ while True:
             break
         
         else:
-            sendMSG = bytes(sendMSG, encoding= 'utf-8')
-            key = Fernet.generate_key()
-            with open('secret.key', 'wb') as keyFile:
-                keyFile.write(key)
-            cipherSuite = Fernet(key)
-            cipherText = cipherSuite.encrypt(sendMSG)
-            
-            client_socket.send(cipherText)
-        
-        '''
-        sendMSG = bytes(input("Envie algo: "), encoding= 'utf-8')
-        key = Fernet.generate_key()
-        with open('secret.key', 'wb') as keyFile:
-            keyFile.write(key)
-        cipherSuite = Fernet(key)
-        cipherText = cipherSuite.encrypt(sendMSG)
-        
-        client_socket.send(cipherText)
+            # Chamar função de encriptar mensagem
+            cipherText = sendCypher(sendMSG)
 
-        if sendMSG == 'TCHAU':
-            print("Fim de conversa!")
-            serv_socket.close()
-            client_socket.close()
-            break
-        '''
+            # Enviar mensagem
+            client_socket.send(cipherText)
